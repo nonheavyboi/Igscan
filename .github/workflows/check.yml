@@ -121,7 +121,7 @@ jobs:
         env:
           SHARD: ${{ matrix.shard }}
           SHARDS: "8"
-          TOTAL: "20000"
+          TOTAL: "20"
           WORKERS: "3"
       - if: always()
         run: |

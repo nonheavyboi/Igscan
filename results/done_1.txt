@@ -1,3 +1,6 @@
 river.ksk.moss
 salt.cldx
 pine.sh.sn
+meadow.stone.stl
+hollow.sgl
+chn.grain

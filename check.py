@@ -1,4 +1,4 @@
-import os, random, re, time, threading, queue, requests
+import os, random, time, threading, queue, requests
 from pathlib import Path
 
 TOTAL   = int(os.getenv("TOTAL", "20000"))
@@ -14,37 +14,31 @@ DONE = OUT / f"done_{SHARD}.txt"
 HEAD = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121 Safari/537.36",
         "Accept-Language": "en-US,en;q=0.9"}
 
-ON = "b c d f g h j k l m n p r s t v w z br ch cl cr dr fl fr gl gr pl pr sh sk sl sn sp st th tr".split()
-VO = "a e i o u".split()
-CO = "b d f g k l m n p r s t v x z ck ld lt mp nd ng nk nt rk rt sk st th".split()
-WORDS = """ash oak salt iron wolf hive dusk fern moss tide glow echo mist thorn river
-stone cloud spark drift bloom ember frost grain hollow ivory juniper kiln lantern meadow
-nectar orbit pine quartz reed ridge smoke steel timber umber vale willow yarn zenith
-era club files daily studio note frame line press room shift trail verse""".split()
+CONS = "bcdfghjklmnpqrstvwxz"
+VOW  = "aeiou"
 
-def mk(rng):
-    r = rng.random()
-    if r < 0.30:
-        return rng.choice(WORDS)
-    n = rng.choice([2, 2, 3, 3, 4])
-    s = ""
-    while len(s) < n:
-        s += rng.choice(ON) if (not s or s[-1] in "aeiou") else rng.choice(CO)
-    return s[:n]
+TEMPLATES = [
+    "C.CC", "CC.C", "C_CC", "CC_C", "CCC_", "_CCC",
+    "C.C_", "C_C_", "C._C", "C_.C", "_CC_", "_C_C",
+    "V.CC", "CV.C", "C_CV", "C_VC",
+]
+
+def gen4(rng):
+    t = rng.choice(TEMPLATES)
+    out = []
+    for ch in t:
+        if ch == "C": out.append(rng.choice(CONS))
+        elif ch == "V": out.append(rng.choice(VOW))
+        else: out.append(ch)
+    return "".join(out)
 
 def build(rng, count):
     seen = set(); guard = 0
-    while len(seen) < count and guard < count * 40:
+    while len(seen) < count and guard < count * 60:
         guard += 1
-        parts = [mk(rng) for _ in range(rng.choice([2, 2, 2, 3]))]
-        name = parts[0]
-        for p in parts[1:]:
-            name += rng.choice("....._") + p
-        if not (4 <= len(name) <= 28): continue
-        if re.search(r"[._]{2}", name): continue
-        if re.search(r"([a-z])\1{2}", name): continue
-        if not re.search(r"[aeiou]", name): continue
-        seen.add(name)
+        s = gen4(rng)
+        if s[0] == s[1] == s[2] == s[3]: continue
+        seen.add(s)
     return list(seen)
 
 rng = random.Random(SEED)

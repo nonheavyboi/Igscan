@@ -1,3 +1,6 @@
 tide.shlt.hollow
 tide_rx.td
 cloud.klt
+tide.sl
+ash.chc
+willow.sl

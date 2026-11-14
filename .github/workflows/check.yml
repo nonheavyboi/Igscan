@@ -1,0 +1,33 @@
+name: check
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install requests
+      - run: python check.py
+        env:
+          SHARD: ${{ matrix.shard }}
+          SHARDS: "8"
+          TOTAL: "20000"
+          WORKERS: "3"
+      - if: always()
+        run: |
+          git config user.name bot
+          git config user.email bot@users.noreply.github.com
+          git add -A
+          git commit -m "shard ${{ matrix.shard }}" || exit 0
+          for i in 1 2 3 4 5; do
+            git pull --rebase --autostash && git push && break
+            sleep 5
+          done
